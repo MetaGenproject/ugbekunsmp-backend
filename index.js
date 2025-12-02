@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // CORS configuration for frontend
 app.use(cors({
-  origin: ['https://ugbekun-beta.vercel.app/'], // Next.js default port
+  origin: 'https://ugbekun-beta.vercel.app/', // Next.js default port
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true
 }));
