@@ -52,12 +52,18 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  studentId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  school: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    required: false
+  },
 }, { timestamps: true });
 
 const Student = mongoose.model("Student", studentSchema);
 
 export default Student;
-
-
-
- 

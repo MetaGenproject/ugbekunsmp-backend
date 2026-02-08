@@ -8,15 +8,47 @@ const signToken = (id) => {
   });
 };
 
-// Send token response
+// Send token response with cookies
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
+  // Cookie options
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true, // Prevents XSS attacks
+    secure: process.env.SECURE_COOKIES === 'true', // HTTPS only in production
+    sameSite: 'lax', // CSRF protection
+    signed: true // Sign the cookie
+  };
+
+  // Set auth token cookie (HTTP-only for security)
+  res.cookie('auth_token', token, cookieOptions);
+
+  // Set session ID cookie (can be accessed by JS if needed)
+  res.cookie('session_id', user._id.toString(), {
+    ...cookieOptions,
+    httpOnly: false // Allow JS access for session tracking
+  });
+
+  // Remove password from output if it exists
+  let userWithoutPassword;
+  if (user.toObject) {
+    userWithoutPassword = user.toObject();
+  } else {
+    userWithoutPassword = { ...user };
+  }
+
+  if (userWithoutPassword.password) {
+    delete userWithoutPassword.password;
+  }
+
   res.status(statusCode).json({
     success: true,
-    token,
+    token, // Still send token in response for backward compatibility
     data: {
-      user
+      user: userWithoutPassword
     }
   });
 };
@@ -156,10 +188,25 @@ export const changePassword = async (req, res) => {
   }
 };
 
-// @desc    Logout user (client-side token removal)
+// @desc    Logout user (clear cookies)
 // @route   POST /api/auth/logout
 // @access  Private
 export const logout = (req, res) => {
+  // Clear all auth cookies
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.SECURE_COOKIES === 'true',
+    sameSite: 'lax',
+    signed: true
+  });
+
+  res.clearCookie('session_id', {
+    httpOnly: false,
+    secure: process.env.SECURE_COOKIES === 'true',
+    sameSite: 'lax',
+    signed: true
+  });
+
   res.status(200).json({
     success: true,
     message: 'Logged out successfully'

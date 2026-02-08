@@ -1,12 +1,16 @@
-import jwt from 'jsonwebtoken'
-// import User from '../models/userModel.js';
+import jwt from 'jsonwebtoken';
 import UserRepository from '../repositories/userRepository.js';
 
 export const protect = async (req, res, next) => {
   try {
     let token;
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    // 1. Check for token in signed cookies first (primary method)
+    if (req.signedCookies && req.signedCookies.auth_token) {
+      token = req.signedCookies.auth_token;
+    }
+    // 2. Fall back to Authorization header (backward compatibility)
+    else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
 
@@ -19,10 +23,10 @@ export const protect = async (req, res, next) => {
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Get user from token
-    const user = await UserRepository.findById(decoded.userId);
-    
+
+    // Get user from token (token is created with 'id', not 'userId')
+    const user = await UserRepository.findById(decoded.id);
+
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -39,7 +43,7 @@ export const protect = async (req, res, next) => {
 
     req.user = user;
     next();
-} catch (error) {
+  } catch (error) {
     return res.status(401).json({
       success: false,
       message: 'Not authorized to access this route',
@@ -65,12 +69,12 @@ export const authorize = (...roles) => {
     }
     next();
   };
-}; 
+};
 
 // School-specific authorization
 export const authorizeSchoolAccess = (req, res, next) => {
   const { schoolId } = req.params;
-  
+
   if (!req.user) {
     return res.status(401).json({
       success: false,
