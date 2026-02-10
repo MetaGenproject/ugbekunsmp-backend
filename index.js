@@ -129,7 +129,7 @@ app.get('/', (req, res) => {
 const Server = async () => {
   await connectDB();
   app.listen(PORT, () => {
-    console.log(`Development server listening on http://localhost:${PORT}`);
+    console.log(`Development server running`);
     console.log('CORS allowed origins: http://localhost:3000, http://127.0.0.1:3000');
   });
 };
