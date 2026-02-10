@@ -53,13 +53,12 @@ if (process.env.NODE_ENV === 'production') {
 
 // CORS configuration for frontend
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://ugbekun-beta.vercel.app/'], // Next.js default port
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://ugbekun-beta.vercel.app'], // Next.js default port
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   credentials: true
 }));
 
-// This handles preflight explicitly
-app.options("*", cors());
+
 // Ensure OPTIONS preflight requests are handled (explicit handler helps some environments)
 // app.options('*', cors({
 //   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
