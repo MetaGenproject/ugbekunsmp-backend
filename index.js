@@ -58,6 +58,8 @@ app.use(cors({
   credentials: true
 }));
 
+// This handles preflight explicitly
+app.options("*", cors());
 // Ensure OPTIONS preflight requests are handled (explicit handler helps some environments)
 // app.options('*', cors({
 //   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
